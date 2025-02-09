@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Converter</title>
+    <link rel="stylesheet" href="Style.css">
+</head>
+<body>
+    <h2>Language Converter</h2>
+    
+    <button onclick="showUploadOption()">Upload Image</button>
+    <button onclick="showTextOption()">Enter Text</button>
+    
+    <div id="inputContainer">
+        <input type="file" id="imageUpload" class="hidden" accept="image/*">
+        <textarea id="textInput" class="hidden" rows="5" cols="50" placeholder="Enter your text here..."></textarea>
+    </div>
+    
+    <br>
+    <label for="languageSelect">Select Language:</label>
+    <select id="languageSelect">
+        <option value="en">English</option>
+        <option value="es">Spanish</option>
+        <option value="fr">French</option>
+        <option value="de">German</option>
+        <option value="hi">Hindi</option>
+    </select>
+    
+    <br><br>
+    <button onclick="submitData()">Submit</button>
+
+    <div id="results" class="hidden">
+        <h3>Original Text:</h3>
+        <div id="originalText"></div>
+        <h3>Translated Text:</h3>
+        <div id="translatedText"></div>
+    </div>
+    
+    <script>
+        function showUploadOption() {
+            document.getElementById('imageUpload').classList.remove('hidden');
+            document.getElementById('textInput').classList.add('hidden');
+        }
+
+        function showTextOption() {
+            document.getElementById('textInput').classList.remove('hidden');
+            document.getElementById('imageUpload').classList.add('hidden');
+        }
+
+        async function submitData() {
+            const selectedLanguage = document.getElementById("languageSelect").value;
+            const imageUpload = document.getElementById("imageUpload");
+            const textInput = document.getElementById("textInput");
+            
+            const formData = new FormData();
+            formData.append('language', selectedLanguage);
+
+            if (!imageUpload.classList.contains('hidden') && imageUpload.files[0]) {
+                formData.append('image', imageUpload.files[0]);
+            } else if (!textInput.classList.contains('hidden') && textInput.value) {
+                formData.append('text', textInput.value);
+            } else {
+                alert("Please provide either text or an image");
+                return;
+            }
+
+            try {
+                const response = await fetch('https://your-ngrok-url.ngrok.io/process_image', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                // Display results
+                document.getElementById('results').classList.remove('hidden');
+                document.getElementById('originalText').textContent = data.original_text;
+                document.getElementById('translatedText').textContent = data.translated_text;
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
